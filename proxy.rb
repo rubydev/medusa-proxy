@@ -59,16 +59,14 @@ module Medusa
 
     def on_data
       lambda do |data|
-        puts black_on_yellow { 'on_data' } + ', request:'
-        puts data
+        puts black_on_yellow { 'on_data' } + ', request:', data
         data
       end
     end
 
     def on_response
       lambda do |backend, resp|
-        puts black_on_green { 'on_response' } + " from #{ bold { backend } }, response:"
-        puts resp
+        puts black_on_green { 'on_response' } + " from #{ bold { backend } }, response:", resp
         resp
       end
     end
