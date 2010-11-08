@@ -10,6 +10,14 @@
 #
 #   $ curl --proxy1.0 localhost:9999 "http://example.com"
 #
+#
+# == TODO:
+#
+# * Implement health check for proxies (asynchronically? perform union of sorted set with healthy proxies set?)
+# * Gemify
+# * Daemonize
+# * Tests
+#
 
 require 'rubygems'
 require 'em-proxy'
@@ -40,8 +48,6 @@ module Medusa
     end
 
     def self.select(method = :random)
-      # TODO: check status
-      # self.new '127.0.0.1:5984'
       case method
         when :balanced
           proxy = new $redis.zrank("medusa>proxies>connections", 0, 0).first
