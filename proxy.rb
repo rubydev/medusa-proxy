@@ -13,7 +13,7 @@
 
 require 'rubygems'
 require 'em-proxy'
-require 'em-redis'
+require 'redis'
 require 'ansi/code'
 require 'open-uri'
 
@@ -24,6 +24,9 @@ module Medusa
     'http://94.23.228.145:3128',
     'http://190.152.146.74:80'
   ]
+
+  $redis = Redis.new
+  $redis.del "medusa>proxies>connections"
 
   class Proxy
 
@@ -62,6 +65,7 @@ module Medusa
       lambda do |name|
         puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { name }
         $redis.incr "medusa>proxies>#{name}>total"
+        $redis.zincrby "medusa>proxies>connections", 1, name
       end
     end
 
@@ -82,6 +86,7 @@ module Medusa
     def on_finish
       lambda do |name|
         puts black_on_magenta { 'on_finish'.ljust(12) }, ''
+        $redis.zincrby "medusa>proxies>connections", -1, name
       end
     end
 
@@ -93,8 +98,6 @@ module Medusa
       puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
 
       ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
-
-        $redis = EM::Protocols::Redis.connect
 
         proxy = Medusa::Proxy.select(:roundrobin)
 
