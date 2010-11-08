@@ -65,8 +65,8 @@ module Medusa
     end
 
     def on_response
-      lambda do |backend, resp|
-        puts black_on_green { 'on_response' } + " from #{ bold { backend } }, response:", resp
+      lambda do |name, resp|
+        puts black_on_green { 'on_response' } + " from #{ bold { name } }, response:", resp
         resp
       end
     end
