@@ -57,23 +57,29 @@ module Medusa
     include ANSI::Code
     extend  self
 
+    def on_connect
+      lambda do |name|
+        puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { name }
+      end
+    end
+
     def on_data
       lambda do |data|
-        puts black_on_yellow { 'on_data' } + ', request:', data
+        puts black_on_yellow { 'on_data'.ljust(12) }, data
         data
       end
     end
 
     def on_response
       lambda do |name, resp|
-        puts black_on_green { 'on_response' } + " from #{ bold { name } }, response:", resp
+        puts black_on_green { 'on_response'.ljust(12) }, resp
         resp
       end
     end
 
     def on_finish
       lambda do |name|
-        puts black_on_magenta { 'on_finish' }, ''
+        puts black_on_magenta { 'on_finish'.ljust(12) }, ''
       end
     end
 
@@ -90,6 +96,7 @@ module Medusa
 
         conn.server proxy, :host => proxy.host, :port => proxy.port
 
+        conn.on_connect  &Medusa::Callbacks.on_connect
         conn.on_data     &Medusa::Callbacks.on_data
         conn.on_response &Medusa::Callbacks.on_response
         conn.on_finish   &Medusa::Callbacks.on_finish
