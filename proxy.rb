@@ -14,22 +14,36 @@
 require 'rubygems'
 require 'em-proxy'
 require 'ansi/code'
+require 'open-uri'
 
 include ANSI::Code
 
 module Medusa
+
+  PROXIES = [
+    'http://94.23.228.145:3128',
+    'http://82.119.76.144:80',
+    'http://190.152.146.74:80'
+  ]
+
   class Proxy
 
-    attr_reader :host, :port
+    attr_reader :url, :host, :port
 
-    def initialize(options={})
-      @host = options[:host]
-      @port = options[:port]
+    def initialize(url)
+      @url = url
+      parsed = URI.parse(@url)
+      @host, @port = parsed.host, parsed.port
     end
 
     def self.select
-      self.new :host => '127.0.0.1', :port => '5984'
+      # TODO: random, roundrobin, balanced, ...
+      # TODO: check status
+      # self.new '127.0.0.1:5984'
+      self.new PROXIES[ rand(PROXIES.size-1) ]
     end
+
+    alias :to_s :url
 
   end
 end
@@ -39,13 +53,9 @@ puts bold { "Launching proxy at #{host}:#{port}...\n" }
 
 Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-
-  # 1. Select proxy
-  # TODO: random, roundrobin, balanced, ...
-  # TODO: check status
   proxy = Medusa::Proxy.select
 
-  conn.server :srv, :host => proxy.host, :port => proxy.port
+  conn.server proxy, :host => proxy.host, :port => proxy.port
 
   conn.on_data do |data|
     puts black_on_yellow { 'on_data' } + ', request:'
