@@ -1,6 +1,6 @@
-# = A simple reverse/forward proxy
+# = Proxy
 #
-# A simple proxy which forwards requests to a backend / another proxy.
+# A simple proxy server which forwards requests to a backend / another proxy.
 #
 # Start the proxy with command:
 #
@@ -15,8 +15,6 @@ require 'rubygems'
 require 'em-proxy'
 require 'ansi/code'
 require 'open-uri'
-
-include ANSI::Code
 
 module Medusa
 
@@ -37,7 +35,7 @@ module Medusa
     end
 
     def self.select
-      # TODO: random, roundrobin, balanced, ...
+      # TODO: roundrobin, balanced, ...
       # TODO: check status
       # self.new '127.0.0.1:5984'
       self.new PROXIES[ rand(PROXIES.size-1) ]
@@ -46,32 +44,55 @@ module Medusa
     alias :to_s :url
 
   end
+
+  module Callbacks
+    include ANSI::Code
+    extend  self
+
+    def on_data
+      lambda do |data|
+        puts black_on_yellow { 'on_data' } + ', request:'
+        puts data
+        data
+      end
+    end
+
+    def on_response
+      lambda do |backend, resp|
+        puts black_on_green { 'on_response' } + " from #{ bold { backend } }, response:"
+        puts resp
+        resp
+      end
+    end
+
+    def on_finish
+      lambda do |name|
+        puts black_on_magenta { 'on_finish' }, ''
+      end
+    end
+
+  end
+
+  module Server
+
+    def start(host='0.0.0.0', port=9999)
+      puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
+
+      ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
+
+        proxy = Medusa::Proxy.select
+
+        conn.server proxy, :host => proxy.host, :port => proxy.port
+
+        conn.on_data     &Medusa::Callbacks.on_data
+        conn.on_response &Medusa::Callbacks.on_response
+        conn.on_finish   &Medusa::Callbacks.on_finish
+      end
+    end
+
+    module_function :start
+  end
+
 end
 
-host, port = '0.0.0.0', '9999'
-puts bold { "Launching proxy at #{host}:#{port}...\n" }
-
-Proxy.start(:host => host, :port => port, :debug => false) do |conn|
-
-  proxy = Medusa::Proxy.select
-
-  conn.server proxy, :host => proxy.host, :port => proxy.port
-
-  conn.on_data do |data|
-    puts black_on_yellow { 'on_data' } + ', request:'
-    puts data
-    data
-  end
-
-  conn.on_response do |backend, resp|
-    puts black_on_green { 'on_response' } + " from #{ bold { backend } }, response:"
-    puts resp
-    resp
-  end
-
-  conn.on_finish do |backend, name|
-    puts black_on_magenta { 'on_finish' }
-    unbind if backend == :srv
-  end
-
-end
+Medusa::Server.start
