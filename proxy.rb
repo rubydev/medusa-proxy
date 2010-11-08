@@ -45,12 +45,14 @@ module Medusa
       case method
         when :roundrobin
           @proxies = PROXIES.clone if @proxies.nil? || @proxies.empty?
-          self.new @proxies.shift
+          proxy = self.new @proxies.shift
         when :random
-          self.new PROXIES[ rand(PROXIES.size-1) ]
+          proxy = self.new PROXIES[ rand(PROXIES.size-1) ]
         else
           raise ArgumentError, "Unknown proxy select method '#{method}'"
       end
+      yield proxy if block_given?
+      proxy
     end
 
     alias :to_s :url
@@ -95,18 +97,21 @@ module Medusa
   module Server
 
     def start(host='0.0.0.0', port=9999)
+
       puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
 
       ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-        proxy = Medusa::Proxy.select(:roundrobin)
+        proxy = Medusa::Proxy.select(:roundrobin) do |proxy|
 
-        conn.server proxy, :host => proxy.host, :port => proxy.port
+          conn.server proxy, :host => proxy.host, :port => proxy.port
 
-        conn.on_connect  &Medusa::Callbacks.on_connect
-        conn.on_data     &Medusa::Callbacks.on_data
-        conn.on_response &Medusa::Callbacks.on_response
-        conn.on_finish   &Medusa::Callbacks.on_finish
+          conn.on_connect  &Medusa::Callbacks.on_connect
+          conn.on_data     &Medusa::Callbacks.on_data
+          conn.on_response &Medusa::Callbacks.on_response
+          conn.on_finish   &Medusa::Callbacks.on_finish
+        end
+
       end
     end
 
