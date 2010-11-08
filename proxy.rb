@@ -1,6 +1,6 @@
 # = Proxy
 #
-# A simple proxy server which forwards requests to a backend / another proxy.
+# A simple, balanced proxy server which forwards requests to a backend / another proxy.
 #
 # Start the proxy with command:
 #
@@ -27,6 +27,7 @@ module Medusa
 
   $redis = Redis.new
   $redis.del "medusa>proxies>connections"
+  PROXIES.each_with_index { |proxy, score| $redis.zadd "medusa>proxies>connections", score, proxy }
 
   class Proxy
 
@@ -39,15 +40,16 @@ module Medusa
     end
 
     def self.select(method = :random)
-      # TODO: balanced, ...
       # TODO: check status
       # self.new '127.0.0.1:5984'
       case method
+        when :balanced
+          proxy = new $redis.zrank("medusa>proxies>connections", 0, 0).first
         when :roundrobin
           @proxies = PROXIES.clone if @proxies.nil? || @proxies.empty?
-          proxy = self.new @proxies.shift
+          proxy = new @proxies.shift
         when :random
-          proxy = self.new PROXIES[ rand(PROXIES.size-1) ]
+          proxy = new PROXIES[ rand(PROXIES.size-1) ]
         else
           raise ArgumentError, "Unknown proxy select method '#{method}'"
       end
