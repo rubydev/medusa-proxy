@@ -19,8 +19,8 @@ require 'open-uri'
 module Medusa
 
   PROXIES = [
-    'http://94.23.228.145:3128',
     'http://82.119.76.144:80',
+    'http://94.23.228.145:3128',
     'http://190.152.146.74:80'
   ]
 
@@ -35,10 +35,13 @@ module Medusa
     end
 
     def self.select(method = :random)
-      # TODO: roundrobin, balanced, ...
+      # TODO: balanced, ...
       # TODO: check status
       # self.new '127.0.0.1:5984'
       case method
+        when :roundrobin
+          @proxies = PROXIES.clone if @proxies.nil? || @proxies.empty?
+          self.new @proxies.shift
         when :random
           self.new PROXIES[ rand(PROXIES.size-1) ]
         else
@@ -85,7 +88,7 @@ module Medusa
 
       ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-        proxy = Medusa::Proxy.select
+        proxy = Medusa::Proxy.select(:roundrobin)
 
         conn.server proxy, :host => proxy.host, :port => proxy.port
 
