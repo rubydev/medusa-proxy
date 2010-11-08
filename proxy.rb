@@ -34,11 +34,16 @@ module Medusa
       @host, @port = parsed.host, parsed.port
     end
 
-    def self.select
+    def self.select(method = :random)
       # TODO: roundrobin, balanced, ...
       # TODO: check status
       # self.new '127.0.0.1:5984'
-      self.new PROXIES[ rand(PROXIES.size-1) ]
+      case method
+        when :random
+          self.new PROXIES[ rand(PROXIES.size-1) ]
+        else
+          raise ArgumentError, "Unknown proxy select method '#{method}'"
+      end
     end
 
     alias :to_s :url
