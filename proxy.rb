@@ -27,17 +27,17 @@ require 'open-uri'
 
 module Medusa
 
-  PROXIES = [
+  BACKENDS = [
     'http://80.79.23.179:8080',
     'http://94.23.228.145:3128',
     'http://190.152.146.74:80'
   ]
 
   $redis = Redis.new
-  $redis.del "medusa>proxies>connections"
-  PROXIES.each_with_index { |proxy, score| $redis.zadd "medusa>proxies>connections", score, proxy }
+  $redis.del "medusa>backends>connections"
+  BACKENDS.each_with_index { |proxy, score| $redis.zadd "medusa>backends>connections", score, proxy }
 
-  class Proxy
+  class Backend
 
     attr_reader :url, :host, :port
 
@@ -50,17 +50,17 @@ module Medusa
     def self.select(method = :random)
       case method
         when :balanced
-          proxy = new $redis.zrank("medusa>proxies>connections", 0, 0).first
+          backend = new $redis.zrank("medusa>backends>connections", 0, 0).first
         when :roundrobin
-          @proxies = PROXIES.clone if @proxies.nil? || @proxies.empty?
-          proxy = new @proxies.shift
+          @backends = BACKENDS.clone if @backends.nil? || @backends.empty?
+          backend = new @backends.shift
         when :random
-          proxy = new PROXIES[ rand(PROXIES.size-1) ]
+          backend = new BACKENDS[ rand(BACKENDS.size-1) ]
         else
-          raise ArgumentError, "Unknown proxy select method '#{method}'"
+          raise ArgumentError, "Unknown backend select method '#{method}'"
       end
-      yield proxy if block_given?
-      proxy
+      yield backend if block_given?
+      backend
     end
 
     alias :to_s :url
@@ -74,8 +74,8 @@ module Medusa
     def on_connect
       lambda do |name|
         puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { name }
-        $redis.incr "medusa>proxies>#{name}>total"
-        $redis.zincrby "medusa>proxies>connections", 1, name
+        $redis.incr "medusa>backends>#{name}>total"
+        $redis.zincrby "medusa>backends>connections", 1, name
       end
     end
 
@@ -96,7 +96,7 @@ module Medusa
     def on_finish
       lambda do |name|
         puts black_on_magenta { 'on_finish'.ljust(12) }, ''
-        $redis.zincrby "medusa>proxies>connections", -1, name
+        $redis.zincrby "medusa>backends>connections", -1, name
       end
     end
 
@@ -108,9 +108,9 @@ module Medusa
 
       puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
 
-      ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
+      Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-        proxy = Medusa::Proxy.select(:roundrobin) do |proxy|
+        proxy = Medusa::Backend.select(:roundrobin) do |proxy|
 
           conn.server proxy, :host => proxy.host, :port => proxy.port
 
