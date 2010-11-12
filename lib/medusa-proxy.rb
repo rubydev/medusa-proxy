@@ -9,7 +9,7 @@ require 'logger'
 
 module Medusa
 
-  PROXY_LIST_URL = 'https://user:password@example.com/private/resource'
+  PROXY_LIST_URL = ENV['MEDUSA_PROXY_LIST_URL'] || 'https://user:password@example.com/private/resource'
 
   $redis = Redis.new
 
