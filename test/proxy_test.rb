@@ -24,10 +24,10 @@ class BalancingProxyTest < Test::Unit::TestCase
         class Medusa::Backend
           def self.list
             @list ||= [
-              {"http://127.0.0.1:3000" => 0},
-              {"http://127.0.0.2:3000" => 0},
-              {"http://127.0.0.3:3000" => 0}
-            ]
+              {:url => "http://127.0.0.1:3000"},
+              {:url => "http://127.0.0.2:3000"},
+              {:url => "http://127.0.0.3:3000"}
+            ].map { |backend| new backend }
           end
         end
 
@@ -42,10 +42,10 @@ class BalancingProxyTest < Test::Unit::TestCase
         class Medusa::Backend
           def self.list
             @list ||= [
-              {"http://127.0.0.1:3000" => 0},
-              {"http://127.0.0.2:3000" => 0},
-              {"http://127.0.0.3:3000" => 0}
-            ]
+              {:url => "http://127.0.0.1:3000", :load => 0},
+              {:url => "http://127.0.0.2:3000", :load => 0},
+              {:url => "http://127.0.0.3:3000", :load => 0}
+            ].map { |backend| new backend }
           end
         end
 
@@ -62,10 +62,10 @@ class BalancingProxyTest < Test::Unit::TestCase
         class Medusa::Backend
           def self.list
             @list ||= [
-              {"http://127.0.0.3:3000" => 0},
-              {"http://127.0.0.2:3000" => 0},
-              {"http://127.0.0.1:3000" => 0}
-            ]
+              {:url => "http://127.0.0.3:3000", :load => 0},
+              {:url => "http://127.0.0.2:3000", :load => 0},
+              {:url => "http://127.0.0.1:3000", :load => 0}
+            ].map { |backend| new backend }
           end
         end
 
@@ -76,10 +76,10 @@ class BalancingProxyTest < Test::Unit::TestCase
         class Medusa::Backend
           def self.list
             @list ||= [
-              {"http://127.0.0.3:3000" => 2},
-              {"http://127.0.0.2:3000" => 1},
-              {"http://127.0.0.1:3000" => 0}
-            ]
+              {:url => "http://127.0.0.3:3000", :load => 2},
+              {:url => "http://127.0.0.2:3000", :load => 1},
+              {:url => "http://127.0.0.1:3000", :load => 0}
+            ].map { |backend| new backend }
           end
         end
 

@@ -7,11 +7,14 @@ module Medusa
   #
   class Backend
 
-    attr_reader :url, :host, :port, :strategy
-    alias       :to_s :url
+    attr_reader   :url, :host, :port, :strategy
+    attr_accessor :load
+    alias         :to_s :url
 
-    def initialize(url)
-      @url = url
+    def initialize(options={})
+      raise ArgumentError, "Please provide a :url and :load" unless options[:url]
+      @url   = options[:url]
+      @load  = options[:load] || 0
       parsed = URI.parse(@url)
       @host, @port = parsed.host, parsed.port
     end
@@ -22,12 +25,13 @@ module Medusa
       @strategy = strategy.to_sym
       case @strategy
         when :balanced
-          backend = new list.sort { |a,b| a.values <=> b.values }.first.keys.first
+          # backend = new list.sort { |a,b| a.values <=> b.values }.first.keys.first
+          backend = list.sort_by { |b| b.load }.first
         when :roundrobin
           @pool   = list.clone if @pool.nil? || @pool.empty?
-          backend = new @pool.shift.keys.first
+          backend = @pool.shift
         when :random
-          backend = new list[ rand(list.size-1) ].keys.first
+          backend = list[ rand(list.size-1) ]
         else
           raise ArgumentError, "Unknown strategy: #{@strategy}"
       end
@@ -41,19 +45,21 @@ module Medusa
     # List of backends
     #
     def self.list
-      @list ||= BACKENDS
+      @list ||= BACKENDS.map { |backend| new backend }
     end
 
     # Increment "currently serving requests" counter
     #
     def increment_counter
-      Backend.list.select { |b| b.keys.first == url }.first[url] += 1
+      # Backend.list.select { |b| b.keys.first == url }.first[url] += 1
+      self.load += 1
     end
 
     # Decrement "currently serving requests" counter
     #
     def decrement_counter
-      Backend.list.select { |b| b.keys.first == url }.first[url] -= 1
+      # Backend.list.select { |b| b.keys.first == url }.first[url] -= 1
+      self.load -= 1
     end
 
   end
