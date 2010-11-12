@@ -32,18 +32,22 @@ require 'open-uri'
 module Medusa
 
   BACKENDS = [
-    'http://190.152.146.74:80',
-    'http://82.119.76.144:80',
-    'http://67.208.112.173:80'
+    {'http://190.152.146.74:80' => 0},
+    {'http://82.119.76.144:80'  => 0},
+    {'http://67.208.112.173:80' => 0}
   ]
 
   $redis = Redis.new
-  $redis.del "medusa>backends>connections"
-  BACKENDS.each_with_index { |proxy, score| $redis.zadd "medusa>backends>connections", score, proxy }
 
+  # Represents a "backend", ie. the endpoint for the proxy.
+  #
+  # This could be eg. a WEBrick webserver (see below), so the proxy server works as a _reverse_ proxy.
+  # But it could also be a proxy server, so the proxy server works as a _forward_ proxy.
+  #
   class Backend
 
-    attr_reader :url, :host, :port
+    attr_reader :url, :host, :port, :strategy
+    alias       :to_s :url
 
     def initialize(url)
       @url = url
@@ -51,35 +55,58 @@ module Medusa
       @host, @port = parsed.host, parsed.port
     end
 
-    def self.select(method = :random)
-      case method
+    # Select backend: balanced, round-robin or random
+    #
+    def self.select(strategy = :balanced)
+      @strategy = strategy.to_sym
+      case @strategy
         when :balanced
-          backend = new $redis.zrank("medusa>backends>connections", 0, 0).first
+          backend = new list.sort { |a,b| a.values <=> b.values }.first.keys.first
         when :roundrobin
-          @backends = BACKENDS.clone if @backends.nil? || @backends.empty?
-          backend = new @backends.shift
+          @pool   = list.clone if @pool.nil? || @pool.empty?
+          backend = new @pool.shift.keys.first
         when :random
-          backend = new BACKENDS[ rand(BACKENDS.size-1) ]
+          backend = new list[ rand(list.size-1) ].keys.first
         else
-          raise ArgumentError, "Unknown backend select method '#{method}'"
+          raise ArgumentError, "Unknown strategy: #{@strategy}"
       end
+
+      puts "---> Selecting #{backend}"
+      backend.increment_counter if @strategy == :balanced
       yield backend if block_given?
       backend
     end
 
-    alias :to_s :url
+    # List of backends
+    #
+    def self.list
+      @list ||= BACKENDS
+    end
+
+    # Increment "currently serving requests" counter
+    #
+    def increment_counter
+      Backend.list.select { |b| b.keys.first == url }.first[url] += 1
+    end
+
+    # Decrement "currently serving requests" counter
+    #
+    def decrement_counter
+      Backend.list.select { |b| b.keys.first == url }.first[url] -= 1
+    end
 
   end
 
+  # Callbacks for em-proxy events
+  #
   module Callbacks
     include ANSI::Code
     extend  self
 
     def on_connect
-      lambda do |name|
-        puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { name }
-        $redis.incr "medusa>backends>#{name}>total"
-        $redis.zincrby "medusa>backends>connections", 1, name
+      lambda do |backend|
+        puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { backend }
+        $redis.incr "medusa>backends>#{backend}>total"
       end
     end
 
@@ -91,45 +118,46 @@ module Medusa
     end
 
     def on_response
-      lambda do |name, resp|
-        puts black_on_green { 'on_response'.ljust(12) } + " from #{name}", resp
+      lambda do |backend, resp|
+        puts black_on_green { 'on_response'.ljust(12) } + " from #{backend}", resp
         resp
       end
     end
 
     def on_finish
-      lambda do |name|
-        puts black_on_magenta { 'on_finish'.ljust(12) } + " for #{name}", ''
-        $redis.zincrby "medusa>backends>connections", -1, name
+      lambda do |backend|
+        puts black_on_magenta { 'on_finish'.ljust(12) } + " for #{backend}", ''
+        backend.decrement_counter if backend.strategy == :balanced
       end
     end
 
   end
 
+  # Wrapping the proxy server
+  #
   module Server
-
-    def start(host='0.0.0.0', port=9999)
+    def run(host='0.0.0.0', port=9999)
 
       puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
 
       Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-        Medusa::Backend.select(:roundrobin) do |proxy|
+        Backend.select do |backend|
 
-          conn.server proxy, :host => proxy.host, :port => proxy.port
+          conn.server backend, :host => backend.host, :port => backend.port
 
-          conn.on_connect  &Medusa::Callbacks.on_connect
-          conn.on_data     &Medusa::Callbacks.on_data
-          conn.on_response &Medusa::Callbacks.on_response
-          conn.on_finish   &Medusa::Callbacks.on_finish
+          conn.on_connect  &Callbacks.on_connect
+          conn.on_data     &Callbacks.on_data
+          conn.on_response &Callbacks.on_response
+          conn.on_finish   &Callbacks.on_finish
         end
 
       end
     end
 
-    module_function :start
+    module_function :run
   end
 
 end
 
-Medusa::Server.start
+Medusa::Server.run if __FILE__ == $0
