@@ -1,0 +1,32 @@
+PATH
+  remote: .
+  specs:
+    medusa-proxy (0.0.0)
+      ansi
+      bundler (~> 1.0.0)
+      em-proxy
+      redis
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    ansi (1.2.2)
+    em-proxy (0.1.4)
+      eventmachine (>= 0.12.9)
+    eventmachine (0.12.10)
+    redis (2.1.1)
+    shoulda (2.11.3)
+    turn (0.8.1)
+      ansi (>= 1.2.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ansi
+  bundler (~> 1.0.0)
+  em-proxy
+  medusa-proxy!
+  redis
+  shoulda
+  turn
