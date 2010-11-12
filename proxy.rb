@@ -88,14 +88,14 @@ module Medusa
 
     def on_response
       lambda do |name, resp|
-        puts black_on_green { 'on_response'.ljust(12) }, resp
+        puts black_on_green { 'on_response'.ljust(12) } + " from #{name}", resp
         resp
       end
     end
 
     def on_finish
       lambda do |name|
-        puts black_on_magenta { 'on_finish'.ljust(12) }, ''
+        puts black_on_magenta { 'on_finish'.ljust(12) } + " for #{name}", ''
         $redis.zincrby "medusa>backends>connections", -1, name
       end
     end
