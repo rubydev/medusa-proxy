@@ -1,12 +1,14 @@
 #!/usr/bin/env ruby
 
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
 require 'rubygems'
 require 'daemons'
 
-require File.expand_path('../../proxy', __FILE__)
+require File.expand_path('../../lib/medusa-proxy', __FILE__)
 
 Daemons.run_proc \
-  'MedusaProxy',
+  'medusa',
   :dir_mode   => :normal,
   :dir        => File.expand_path('../../log', __FILE__),
   :backtrace  => true,

@@ -1,0 +1,24 @@
+= Proxy
+
+A simple, balanced proxy server which forwards requests to a backend / another proxy.
+
+Start the proxy with command:
+
+  $ ruby proxy.rb
+
+Now connect to the internet via forwarded proxy:
+
+  $ curl --proxy1.0 localhost:9999 "http://example.com"
+
+or use the provided script, which sends multiple requests in one go:
+
+  $ ruby clients
+
+
+== TODO:
+
+* Implement health check for proxies (asynchronically? perform union of sorted set with healthy proxies set?)
+* Gemify
+* Daemonize
+* Tests
+
