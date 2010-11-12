@@ -16,11 +16,14 @@ Gem::Specification.new do |s|
 
   s.add_dependency "bundler", "~> 1.0.0"
   s.add_dependency "em-proxy"
+  s.add_dependency "rest-client"
+  s.add_dependency "yajl-ruby"
   s.add_dependency "redis"
   s.add_dependency "ansi"
 
   s.add_development_dependency "shoulda"
   s.add_development_dependency "turn"
+  s.add_development_dependency "fakeweb"
 
   s.files        = `git ls-files`.split("\n")
   s.require_path = 'lib'

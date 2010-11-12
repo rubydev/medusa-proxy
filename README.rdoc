@@ -30,7 +30,7 @@ The application contains an executable script which runs the server in the backg
 
 Start the server with command:
 
-    $ bin/medusa start
+    $ bin/medusa start -- production
 
 Check that the server is running correctly:
 

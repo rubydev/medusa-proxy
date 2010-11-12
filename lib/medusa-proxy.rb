@@ -1,17 +1,15 @@
 require 'rubygems'
+require 'rest-client'
 require 'em-proxy'
 require 'redis'
+require 'yajl'
 require 'ansi/code'
 require 'open-uri'
 require 'logger'
 
 module Medusa
 
-  BACKENDS = [
-    {:url => 'http://190.152.146.74:80'},
-    {:url => 'http://82.119.76.144:80' },
-    {:url => 'http://67.208.112.173:80'}
-  ]
+  PROXY_LIST_URL = 'https://user:password@example.com/private/resource'
 
   $redis = Redis.new
 
@@ -22,6 +20,7 @@ module Medusa
 
 end
 
+require 'medusa-proxy/config'
 require 'medusa-proxy/backend'
 require 'medusa-proxy/callbacks'
 require 'medusa-proxy/server'

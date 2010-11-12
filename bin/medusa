@@ -5,6 +5,9 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'daemons'
 
+env = ARGV.last
+ENV['MEDUSA_ENV'] = %w[ development test production ].include?(env) ? env : 'development'
+
 require File.expand_path('../../lib/medusa-proxy', __FILE__)
 
 Daemons.run_proc \

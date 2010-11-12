@@ -3,12 +3,15 @@ module Medusa
   # Wrapping the proxy server
   #
   module Server
-    def run(host='0.0.0.0', port=9999)
+    def run(options={})
+      host = options[:host] || '0.0.0.0'
+      port = options[:port] || 9999
+      env  = options[:env]  || ENV['MEDUSA_ENV']
 
       if STDOUT.tty?
-        puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
+        puts ANSI::Code.bold { "Launching proxy in #{env} at #{host}:#{port}...\n" }
       else
-        Medusa.logger.info "Launching proxy at #{host}:#{port}...\n"
+        Medusa.logger.info "Launching proxy in #{env} at #{host}:#{port}...\n"
       end
 
       Proxy.start(:host => host, :port => port, :debug => false) do |conn|
