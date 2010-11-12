@@ -110,7 +110,7 @@ module Medusa
 
       Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-        proxy = Medusa::Backend.select(:roundrobin) do |proxy|
+        Medusa::Backend.select(:roundrobin) do |proxy|
 
           conn.server proxy, :host => proxy.host, :port => proxy.port
 
