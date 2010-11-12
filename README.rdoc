@@ -2,23 +2,48 @@
 
 A simple, balanced proxy server which forwards requests to a backend / another proxy.
 
+== Usage overview
+
 Start the proxy with command:
 
-  $ ruby proxy.rb
+    $ bin/medusa start --ontop
 
 Now connect to the internet via forwarded proxy:
 
-  $ curl --proxy1.0 localhost:9999 "http://example.com"
+    $ curl --proxy1.0 localhost:9999 "http://example.com"
 
 or use the provided script, which sends multiple requests in one go:
 
-  $ ruby clients
+    $ ruby clients.rb
+
+and watch the colorized traffic flowing in your terminal.
+
+== Installation
+
+You need the Bundler gem:
+
+    $ bundle install
+
+== Usage in production
+
+The application contains an executable script which runs the server in the background, saves a PID file and logs output.
+
+Start the server with command:
+
+    $ bin/medusa start
+
+Check that the server is running correctly:
+
+    $ ls -l log/medusa.pid
+    $ tail log/medusa.output
+    $ ps ax | grep medusa
+
+You can monitor the service as you wish based on the PID file.
 
 
 == TODO:
 
+* Load proxy list from REST service
+* Save "total" stats to Redis asynchronically
 * Implement health check for proxies (asynchronically? perform union of sorted set with healthy proxies set?)
-* Gemify
-* Daemonize
-* Tests
-
+* Create frontend web application with EventMachine and WebSockets to monitor the server
