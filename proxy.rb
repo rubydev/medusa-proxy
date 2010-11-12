@@ -10,6 +10,10 @@
 #
 #   $ curl --proxy1.0 localhost:9999 "http://example.com"
 #
+# or use the provided script, which sends multiple requests in one go:
+#
+#   $ ruby clients
+#
 #
 # == TODO:
 #
