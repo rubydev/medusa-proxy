@@ -28,6 +28,7 @@ require 'em-proxy'
 require 'redis'
 require 'ansi/code'
 require 'open-uri'
+require 'logger'
 
 module Medusa
 
@@ -38,6 +39,11 @@ module Medusa
   ]
 
   $redis = Redis.new
+
+  def logger
+    @logger ||= ::Logger.new(STDOUT)
+  end
+  module_function :logger
 
   # Represents a "backend", ie. the endpoint for the proxy.
   #
@@ -71,7 +77,7 @@ module Medusa
           raise ArgumentError, "Unknown strategy: #{@strategy}"
       end
 
-      puts "---> Selecting #{backend}"
+      puts "---> Selecting #{backend}" if STDOUT.tty?
       backend.increment_counter if @strategy == :balanced
       yield backend if block_given?
       backend
@@ -105,28 +111,36 @@ module Medusa
 
     def on_connect
       lambda do |backend|
-        puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { backend }
+        if STDOUT.tty?
+          puts black_on_magenta { 'on_connect'.ljust(12) } + ' ' + bold { backend }
+        else
+          Medusa.logger.debug "Connected to #{backend}"
+        end
         $redis.incr "medusa>backends>#{backend}>total"
       end
     end
 
     def on_data
       lambda do |data|
-        puts black_on_yellow { 'on_data'.ljust(12) }, data
+        puts black_on_yellow { 'on_data'.ljust(12) }, data if STDOUT.tty?
         data
       end
     end
 
     def on_response
       lambda do |backend, resp|
-        puts black_on_green { 'on_response'.ljust(12) } + " from #{backend}", resp
+        puts black_on_green { 'on_response'.ljust(12) } + " from #{backend}", resp if STDOUT.tty?
         resp
       end
     end
 
     def on_finish
       lambda do |backend|
-        puts black_on_magenta { 'on_finish'.ljust(12) } + " for #{backend}", ''
+        if STDOUT.tty?
+          puts black_on_magenta { 'on_finish'.ljust(12) } + " for #{backend}", ''
+        else
+          Medusa.logger.debug "Disconnected from #{backend}"
+        end
         backend.decrement_counter if backend.strategy == :balanced
       end
     end
@@ -138,7 +152,11 @@ module Medusa
   module Server
     def run(host='0.0.0.0', port=9999)
 
-      puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
+      if STDOUT.tty?
+        puts ANSI::Code.bold { "Launching proxy at #{host}:#{port}...\n" }
+      else
+        Medusa.logger.info "Launching proxy at #{host}:#{port}...\n"
+      end
 
       Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
