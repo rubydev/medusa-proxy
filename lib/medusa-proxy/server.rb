@@ -14,7 +14,7 @@ module Medusa
         Medusa.logger.info "Launching proxy in #{env} at #{host}:#{port}...\n"
       end
 
-      Proxy.start(:host => host, :port => port, :debug => false) do |conn|
+      ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
         Backend.select do |backend|
 
