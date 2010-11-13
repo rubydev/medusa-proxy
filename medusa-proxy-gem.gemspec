@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency "em-proxy"
   s.add_dependency "rest-client"
   s.add_dependency "yajl-ruby"
+  s.add_dependency "SystemTimer"
   s.add_dependency "redis"
   s.add_dependency "ansi"
   s.add_dependency "daemons"
