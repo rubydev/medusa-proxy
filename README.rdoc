@@ -6,7 +6,7 @@ A simple, balanced proxy server which forwards requests to a backend / another p
 
 Start the proxy with command:
 
-    $ bin/medusa start --ontop
+    $ bundle exec bin/medusa start --ontop
 
 Now connect to the internet via forwarded proxy:
 
@@ -28,9 +28,9 @@ You need the Bundler gem:
 
 The application contains an executable script which runs the server in the background, saves a PID file and logs output.
 
-Start the server with command:
+Start the server with command (be sure to use the `bundle exec` command, to resolve dependencies):
 
-    $ export MEDUSA_PROXY_LIST_URL="https://user:password@ataxo.com/medusa/proxies.json" && bin/medusa start -- production
+    $ export MEDUSA_PROXY_LIST_URL="https://user:password@ataxo.com/medusa/proxies.json" && bundle exec bin/medusa start -- production
 
 Check that the server is running correctly:
 
