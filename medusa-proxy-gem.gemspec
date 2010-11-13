@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "yajl-ruby"
   s.add_dependency "redis"
   s.add_dependency "ansi"
+  s.add_dependency "daemons"
 
   s.add_development_dependency "shoulda"
   s.add_development_dependency "turn"
