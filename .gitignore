@@ -3,4 +3,5 @@ Gemfile.lock
 log/*
 !log/.gitignore
 pkg/*
+.bundle/
 *.gem
