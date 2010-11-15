@@ -6,6 +6,15 @@ module Medusa
     include ANSI::Code
     extend  self
 
+    def on_select
+      lambda do |backend|
+        if STDOUT.tty?
+          puts black_on_white { 'on_select'.ljust(12) } + " #{backend.inspect}"
+        end
+        backend.increment_counter if Backend.strategy == :balanced
+      end
+    end
+
     def on_connect
       lambda do |backend|
         if STDOUT.tty?

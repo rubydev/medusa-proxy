@@ -35,8 +35,7 @@ module Medusa
           raise ArgumentError, "Unknown strategy: #{@strategy}"
       end
 
-      puts "---> Selecting #{backend}" if STDOUT.tty?
-      backend.increment_counter if Backend.strategy == :balanced
+      Callbacks.on_select.call(backend)
       yield backend if block_given?
       backend
     end
