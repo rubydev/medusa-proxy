@@ -11,7 +11,8 @@ module Medusa
       if STDOUT.tty?
         puts ANSI::Code.bold { "Launching proxy in #{env} at #{host}:#{port}...\n" }
       else
-        Medusa.logger.info "Launching proxy in #{env} at #{host}:#{port}...\n"
+        Medusa.logger.info "Launching proxy in '#{env}' environment at #{host}:#{port}..."
+        Medusa.logger.info "Using backends: #{Medusa::BACKENDS.inspect}"
       end
 
       ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|

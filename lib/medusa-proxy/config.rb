@@ -16,7 +16,6 @@ module Medusa
     begin
       list = RestClient.get PROXY_LIST_URL, {:accept => :json}
       BACKENDS = Yajl::Parser.parse(list, :symbolize_keys => true)
-      p BACKENDS if ENV['MEDUSA_ENV']
     rescue Exception => e
       puts "[!] Cannot load proxy list configuration from #{PROXY_LIST_URL}", "\n"
       raise e
