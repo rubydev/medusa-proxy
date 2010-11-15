@@ -38,7 +38,7 @@ module Medusa
         else
           Medusa.logger.debug "Disconnected from #{backend}"
         end
-        backend.decrement_counter if backend.strategy == :balanced
+        backend.decrement_counter if Backend.strategy == :balanced
       end
     end
 

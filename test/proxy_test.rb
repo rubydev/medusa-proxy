@@ -83,10 +83,16 @@ class BalancingProxyTest < Test::Unit::TestCase
           end
         end
 
-        assert_equal '127.0.0.1', Medusa::Backend.select.host
+        one = Medusa::Backend.select
+        assert_equal '127.0.0.1', one.host
         assert_equal '127.0.0.1', Medusa::Backend.select.host
         assert_equal '127.0.0.2', Medusa::Backend.select.host
         assert_equal '127.0.0.3', Medusa::Backend.select.host
+        assert_equal '127.0.0.1', Medusa::Backend.select.host
+        assert_equal '127.0.0.2', Medusa::Backend.select.host
+
+        Medusa::Callbacks.on_finish.call(one) # Finish request
+        assert_equal '127.0.0.1', Medusa::Backend.select.host
       end
 
     end

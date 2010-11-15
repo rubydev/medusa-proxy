@@ -25,7 +25,6 @@ module Medusa
       @strategy = strategy.to_sym
       case @strategy
         when :balanced
-          # backend = new list.sort { |a,b| a.values <=> b.values }.first.keys.first
           backend = list.sort_by { |b| b.load }.first
         when :roundrobin
           @pool   = list.clone if @pool.nil? || @pool.empty?
@@ -37,7 +36,7 @@ module Medusa
       end
 
       puts "---> Selecting #{backend}" if STDOUT.tty?
-      backend.increment_counter if @strategy == :balanced
+      backend.increment_counter if Backend.strategy == :balanced
       yield backend if block_given?
       backend
     end
@@ -48,17 +47,21 @@ module Medusa
       @list ||= BACKENDS.map { |backend| new backend }
     end
 
+    # Return balancing strategy
+    #
+    def self.strategy
+      @strategy
+    end
+
     # Increment "currently serving requests" counter
     #
     def increment_counter
-      # Backend.list.select { |b| b.keys.first == url }.first[url] += 1
       self.load += 1
     end
 
     # Decrement "currently serving requests" counter
     #
     def decrement_counter
-      # Backend.list.select { |b| b.keys.first == url }.first[url] -= 1
       self.load -= 1
     end
 
