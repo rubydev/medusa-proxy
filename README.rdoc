@@ -28,9 +28,14 @@ You need the Bundler gem:
 
 The application contains an executable script which runs the server in the background, saves a PID file and logs output.
 
-Start the server with command (be sure to use the `bundle exec` command, to resolve dependencies):
+First, provide the application with an URL to a list of backend proxies:
 
-    $ export MEDUSA_PROXY_LIST_URL="https://user:password@ataxo.com/medusa/proxies.json" && bundle exec bin/medusa start -- production
+    $ cp config/config.example.rb config/config.rb
+    $ vim config/config.example.rb
+
+Then start the server (be sure to use the `bundle exec` command, to resolve dependencies):
+
+    $ bundle exec bin/medusa start -- production
 
 Check that the server is running correctly:
 

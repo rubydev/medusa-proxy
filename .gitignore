@@ -1,5 +1,6 @@
 .DS_Store
 Gemfile.lock
+config/config.rb
 log/*
 !log/.gitignore
 pkg/*

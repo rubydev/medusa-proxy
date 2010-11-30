@@ -7,9 +7,9 @@ require 'ansi/code'
 require 'open-uri'
 require 'logger'
 
-module Medusa
+require File.expand_path('../../config/config.rb', __FILE__)
 
-  PROXY_LIST_URL = ENV['MEDUSA_PROXY_LIST_URL'] || 'https://user:password@example.com/private/resource'
+module Medusa
 
   $redis = Redis.new
 
