@@ -16,5 +16,5 @@ Daemons.run_proc \
   :dir        => File.expand_path('../../log', __FILE__),
   :backtrace  => true,
   :log_output => true do
-    Medusa::Server.run
+    Medusa::Server.run(:host => Medusa::HOST, :port => Medusa::PORT)
 end

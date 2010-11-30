@@ -28,7 +28,7 @@ You need the Bundler gem:
 
 The application contains an executable script which runs the server in the background, saves a PID file and logs output.
 
-First, provide the application with an URL to a list of backend proxies:
+First, provide the application with an URL to a list of backend proxies, bind hostname and port:
 
     $ cp config/config.example.rb config/config.rb
     $ vim config/config.example.rb
