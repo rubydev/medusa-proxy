@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+env = ARGV.last
+ENV['MEDUSA_ENV'] = %w[ development test production ].include?(env) ? env : 'development'
+
+require File.expand_path('../../lib/medusa-proxy', __FILE__)
+
+include ANSI::Code
+
+unless $redis
+  puts "Redis is not available, exiting..."
+  exit(1)
+end
+
+puts bold { "Statistics for Medusa in #{ENV['MEDUSA_ENV']} environment" }, '='*80
+
+print 'URL'.ljust(50)
+print 'CURRENT    '
+print 'TOTAL      '
+print 'LIVE       '
+puts "\n",'='*80
+
+Medusa::Backend::list.each do |backend|
+  print backend.url.ljust(50)
+  print ($redis.get "medusa>backends>#{backend}>current").to_s.ljust(11)
+  print ($redis.get "medusa>backends>#{backend}>total").to_s.ljust(11)
+  print backend.dead? ? red_on_black { 'DEAD' } : green_on_black { 'LIVE' }
+  puts
+end
+
+puts '-'*80
