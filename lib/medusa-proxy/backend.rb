@@ -36,6 +36,11 @@ module Medusa
       end
 
       Callbacks.on_select.call(backend)
+
+      if backend.dead?
+        backend = self.select(strategy)
+      end
+
       yield backend if block_given?
       backend
     end
@@ -62,6 +67,13 @@ module Medusa
     #
     def decrement_counter
       self.load -= 1
+    end
+
+    # Check if proxy is not on a death list
+    #
+    def dead?
+      return false unless $redis
+      $redis.sismember "medusa>backends>deathrow", url
     end
 
   end

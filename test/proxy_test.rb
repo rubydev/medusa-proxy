@@ -18,6 +18,36 @@ class BalancingProxyTest < Test::Unit::TestCase
 
     end
 
+    context "when selecting the backend and Redis is available" do
+
+      setup do
+        $redis.del "medusa>backends>deathrow"
+        class Medusa::Backend
+          def self.list
+            @list ||= [
+              {:url => "http://127.0.0.1:3000"},
+              {:url => "http://127.0.0.2:3000"},
+              {:url => "http://127.0.0.3:3000"}
+            ].map { |backend| new backend }
+          end
+        end
+      end
+
+      teardown do
+        $redis.del "medusa>backends>deathrow"
+      end
+
+      should "check the deathrow list" do
+        # Add the 127.0.0.1 proxy to deathrow
+        $redis.sadd "medusa>backends>deathrow", 'http://127.0.0.1:3000'
+
+        5.times do
+          assert '127.0.0.1' != Medusa::Backend.select.host, "Should not select 1, because it's on a deathrow"
+        end
+      end
+
+    end
+
     context "when using the 'random' strategy" do
 
       should "should select random backend" do
