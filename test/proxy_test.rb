@@ -50,7 +50,7 @@ class BalancingProxyTest < Test::Unit::TestCase
 
     context "when using the 'random' strategy" do
 
-      should "should select random backend" do
+      setup do
         class Medusa::Backend
           def self.list
             @list ||= [
@@ -60,6 +60,9 @@ class BalancingProxyTest < Test::Unit::TestCase
             ].map { |backend| new backend }
           end
         end
+      end
+
+      should "should select random backend" do
 
         srand(0)
         assert_equal '127.0.0.1', Medusa::Backend.select(:random).host
