@@ -9,6 +9,7 @@ module Medusa
     def on_select
       lambda do |backend|
         backend.increment_counter if Backend.strategy == :balanced
+        $redis.incr "medusa>backends>#{backend}>current" if $redis
         if STDOUT.tty?
           puts black_on_white { 'on_select'.ljust(12) } + " #{backend.inspect}"
         end
@@ -43,6 +44,7 @@ module Medusa
     def on_finish
       lambda do |backend|
         backend.decrement_counter if Backend.strategy == :balanced
+        $redis.decr "medusa>backends>#{backend}>current" if $redis
         if STDOUT.tty?
           puts black_on_magenta { 'on_finish'.ljust(12) } + " for #{backend.to_s.ljust(28)}" + "| load: #{backend.load}", ''
         else
