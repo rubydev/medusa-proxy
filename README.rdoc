@@ -45,10 +45,17 @@ Check that the server is running correctly:
 
 You can monitor the service as you wish based on the PID file.
 
+A "deathrow" check is performed in <tt>Backend.select</tt>. The URL of selected proxy is checked
+against <tt>medusa>backends>deathrow</tt> set in Redis. You are responsible for checking the status
+of proxies and adding/removing them into this set:
+
+    $ redis-cli
+    > sadd medusa>backends>deathrow http://127.0.0.1:3000
+    > smembers medusa>backends>deathrow
+    > srem medusa>backends>deathrow http://127.0.0.1:3000
+    
 
 == TODO:
 
-* Load proxy list from REST service
 * Save "total" stats to Redis asynchronically
-* Implement health check for proxies (asynchronically? perform union of sorted set with healthy proxies set?)
 * Create frontend web application with EventMachine and WebSockets to monitor the server
