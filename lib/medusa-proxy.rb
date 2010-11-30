@@ -11,7 +11,7 @@ require File.expand_path('../../config/config.rb', __FILE__)
 
 module Medusa
 
-  $redis = Redis.new
+  $redis = Redis.new rescue nil
 
   def logger
     @logger ||= ::Logger.new(STDOUT)
