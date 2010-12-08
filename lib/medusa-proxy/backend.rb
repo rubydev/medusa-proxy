@@ -7,7 +7,7 @@ module Medusa
   #
   class Backend
 
-    attr_reader   :url, :host, :port, :strategy
+    attr_reader   :url, :host, :port
     attr_accessor :load
     alias         :to_s :url
 
@@ -19,10 +19,16 @@ module Medusa
       @host, @port = parsed.host, parsed.port
     end
 
-    # Select backend: balanced, round-robin or random
+    # Select backend
+    #
+    # There are three possible stratgies to choose from:
+    #
+    # * <em>balanced</em>
+    # * <em>round-robin</em>
+    # * <em>random</em>
     #
     def self.select(strategy = :balanced)
-      @strategy = strategy.to_sym
+      @strategy = strategy || :balanced
       case @strategy
         when :balanced
           backend = list.sort_by { |b| b.load }.first
@@ -43,6 +49,12 @@ module Medusa
 
       yield backend if block_given?
       backend
+    end
+
+    # Return strategy for the Backend class
+    #
+    def self.strategy
+      @strategy
     end
 
     # List of backends

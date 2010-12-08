@@ -48,6 +48,33 @@ class BalancingProxyTest < Test::Unit::TestCase
 
     end
 
+    context "when no strategy is passed" do
+      should "use the :balanced strategy" do
+        backend = Medusa::Backend.select
+        assert_equal :balanced, Medusa::Backend.strategy
+      end
+    end
+
+    context "when no strategy is configured and passed" do
+      setup do
+        Medusa::STRATEGY = nil
+      end
+      should "use the :balanced strategy" do
+        backend = Medusa::Backend.select(Medusa::STRATEGY)
+        assert_equal :balanced, Medusa::Backend.strategy
+      end
+    end
+
+    context "when strategy is configured and passed, it" do
+      setup do
+        Medusa::STRATEGY = :roundrobin
+      end
+      should "be used" do
+        backend = Medusa::Backend.select(Medusa::STRATEGY)
+        assert_equal :roundrobin, Medusa::Backend.strategy
+      end
+    end
+
     context "when using the 'random' strategy" do
 
       setup do
