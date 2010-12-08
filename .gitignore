@@ -2,6 +2,7 @@
 Gemfile.lock
 config/config.rb
 log/*
+rdoc/
 !log/.gitignore
 pkg/*
 .bundle/
