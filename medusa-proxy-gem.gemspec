@@ -23,9 +23,11 @@ Gem::Specification.new do |s|
   s.add_dependency "ansi"
   s.add_dependency "daemons"
 
+  s.add_development_dependency "rake"
   s.add_development_dependency "shoulda"
   s.add_development_dependency "turn"
   s.add_development_dependency "fakeweb"
+  s.add_development_dependency "sdoc"
 
   s.files        = `git ls-files`.split("\n")
   s.require_path = 'lib'
