@@ -17,7 +17,7 @@ module Medusa
 
       ::Proxy.start(:host => host, :port => port, :debug => false) do |conn|
 
-        Backend.select do |backend|
+        Backend.select(Medusa::STRATEGY) do |backend|
 
           conn.server backend, :host => backend.host, :port => backend.port
 
