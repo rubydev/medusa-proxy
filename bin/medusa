@@ -10,11 +10,18 @@ ENV['MEDUSA_ENV'] = %w[ development test production ].include?(env) ? env : 'dev
 
 require File.expand_path('../../lib/medusa-proxy', __FILE__)
 
+# process name
+$0 = Medusa::PROC_NAME
+
+# check pid file, delete if empty
+pid_file = "log/#{Medusa::PROC_NAME}.pid"
+File.delete(pid_file) if /\d+/ !~ File.open(pid_file).first rescue nil
+
 Daemons.run_proc \
-  'medusa',
+  Medusa::PROC_NAME,
   :dir_mode   => :normal,
   :dir        => File.expand_path('../../log', __FILE__),
-  :backtrace  => true,
-  :log_output => true do
+  :backtrace  => Medusa::LOGGED,
+  :log_output => Medusa::LOGGED do
     Medusa::Server.run(:host => Medusa::HOST, :port => Medusa::PORT)
 end

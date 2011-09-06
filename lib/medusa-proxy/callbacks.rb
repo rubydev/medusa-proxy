@@ -36,7 +36,11 @@ module Medusa
 
     def on_response
       lambda do |backend, resp|
-        puts black_on_green { 'on_response'.ljust(12) } + " from #{backend}", resp if STDOUT.tty?
+        if STDOUT.tty?
+          puts black_on_green { 'on_response'.ljust(12) } + " from #{backend}", resp
+        else
+          Medusa.logger.debug "Response with backend #{backend}: #{resp.sub(/\r\n.*$/m,"")}"
+        end
         resp
       end
     end

@@ -3,4 +3,6 @@ module Medusa
   PORT = 9999
   PROXY_LIST_URL = 'https://user:password@example.com/private/resource'
   STRATEGY = :balanced
+  PROC_NAME = 'medusa'
+  LOGGED = true
 end
